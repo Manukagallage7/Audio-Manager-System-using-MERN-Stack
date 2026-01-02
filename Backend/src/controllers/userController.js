@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export function registerUser(req, res) {
 
@@ -29,9 +30,16 @@ export function loginUser(req,res) {
     User.findOne({ email : data.email })
         .then(user => {
             if(user && bcrypt.compareSync(data.password, user.password)) {
+                const token = jwt.sign({
+                    firstName : user.firstName,
+                    lastName : user.lastName,
+                    email : user.email,
+                    role  : user.role
+                }, "Audio-Manager-123")
                 res.status(200).json(
                     {
                         message: 'Login successful',
+                        token: token,
                         user
                     });
             } else {
@@ -49,4 +57,8 @@ export function loginUser(req,res) {
         }
 
         )
+}
+
+export function updateUser(req,res) {
+    
 }
