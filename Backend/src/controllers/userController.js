@@ -1,7 +1,9 @@
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
+dotenv.config();
 export function registerUser(req, res) {
 
     req.body.password = bcrypt.hashSync(req.body.password, 10)
@@ -35,7 +37,7 @@ export function loginUser(req,res) {
                     lastName : user.lastName,
                     email : user.email,
                     role  : user.role
-                }, "Audio-Manager-123")
+                }, process.env.JWT_SECRET)
                 res.status(200).json(
                     {
                         message: 'Login successful',
