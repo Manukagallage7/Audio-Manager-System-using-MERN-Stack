@@ -36,7 +36,8 @@ export function loginUser(req,res) {
                     firstName : user.firstName,
                     lastName : user.lastName,
                     email : user.email,
-                    role  : user.role
+                    type  : user.type,
+                    profilePicture: user.profilePicture
                 }, process.env.JWT_SECRET)
                 res.status(200).json(
                     {
