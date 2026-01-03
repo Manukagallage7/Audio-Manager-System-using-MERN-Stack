@@ -21,7 +21,7 @@ const reviewSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
-        default: Date.now()
+        default: Date.now
     },
     isApproved: {
         type: Boolean,
@@ -30,7 +30,7 @@ const reviewSchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        required: true,
+        required: false,
         default: ""
     }
 })
