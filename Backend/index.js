@@ -3,8 +3,11 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import userRouter from './src/routes/userRouter.js';
 import productRouter from './src/routes/productRouter.js';
-import 'dotenv/config';
+import reviewRouter from './src/routes/reviewRouter.js';
+import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+
+dotenv.config();
 
 let app = express();
 
@@ -14,7 +17,7 @@ app.use((req, res, next)=> {
     if(token!== null){
         token = token.replace("Bearer", "")
 
-        jwt.verify(token, "Audio-Manager-123",(err, decoded)=> {
+        jwt.verify(token, process.env.JWT_SECRET,(err, decoded)=> {
             if(!err){
                 req.user = decoded
 
@@ -37,6 +40,7 @@ let connection = mongoose.connection;
 
 app.use("/api/users", userRouter);
 app.use("api/product", productRouter)
+app.use("api/review", reviewRouter)
 
 app.listen(5000, ()=> {
         console.log("Server is running on port 5000");
