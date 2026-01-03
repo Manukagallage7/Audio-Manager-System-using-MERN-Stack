@@ -15,6 +15,10 @@ export function addReview(req,res) {
     data.profilePicture = req.user.profilePicture
     data.email = req.user.email
 
+    if (data.rating == null || data.comment == null) {
+        return res.status(400).json({ message: "rating and comment are required" });
+    }
+
     const newReview = new reviewModel(data)
 
     newReview.save()
@@ -25,6 +29,7 @@ export function addReview(req,res) {
     })
     .catch((err)=> {
         res.status(500).json({
+            message: err.message || err,
             error: "Review addition failed"
         })
     })
@@ -60,39 +65,38 @@ export function updateReview(req,res) {
         })
         return
     }
+    const update = req.body || {};
 
-    if(req.user.type !== "admin"){
-    reviewModel.updateOne(
-        {email: email},
-        { $set: update }
-    ).then(()=>{
-        res.json({
-            message: "Review update successfully"
-        })
-    }).catch(()=> {
-        res.status(500).json({
-            error: "Review updating failed"
-        })
-    })
-    return
+    // Admin can update any review
+    if (req.user.type === "admin") {
+        return reviewModel.updateOne({ email }, { $set: update })
+            .then(() =>
+                res.json(
+                    { message: "Review updated successfully" }
+                ))
+            .catch((err) =>
+                res.status(500).json(
+                    { error: "Review updating failed", details: err.message }
+                ));
     }
 
-    if(req.user.type === "customer") {
-        if(req.user.email === email) {
-            reviewModel.updateOne(
-                {email: email},
-                { $set: update }
-            ).then(()=>{
-                res.json({
-                    message: "Review updated successfully"
-                })
-            }).catch(()=> {
-                res.status(500).json({
-                    error: "Review updating failed"
-                })
-            })
+    // Customer can update only their own review
+    if (req.user.type === "customer") {
+        if (req.user.email !== email) {
+            return res.status(403).json({ message: "Not authorized to update this review" });
         }
+        return reviewModel.updateOne({ email }, { $set: update })
+            .then(() =>
+                res.json(
+                    { message: "Review updated successfully" }
+                ))
+            .catch((err) =>
+                res.status(500).json(
+                    { error: "Review updating failed", details: err.message }
+                ));
     }
+
+    return res.status(403).json({ message: "Not authorized" });
 }
 
 export function deleteReview(req,res) {
@@ -104,7 +108,7 @@ export function deleteReview(req,res) {
         })
         return
     }
-
+    // Admin can delete any review
     if(req.user.type == "admin"){
         reviewModel.deleteOne({
         email: email
@@ -120,6 +124,7 @@ export function deleteReview(req,res) {
     return
     }
 
+    // Customer can delete only their own review
     if(req.user.type == "customer") {
         if(req.user.email == email) {
             reviewModel.deleteOne({
