@@ -1,6 +1,6 @@
 import reviewModel from "../models/reviewModel.js";
 
-export function addReview(req,res) {
+export async function addReview(req,res) {
 
     if(req.user == null){
         res.status(401).json({
@@ -21,42 +21,47 @@ export function addReview(req,res) {
 
     const newReview = new reviewModel(data)
 
-    newReview.save()
-    .then(()=> {
-        res.status(201).json({
-            message: "Review added successfully"
-        })
-    })
-    .catch((err)=> {
+    try {
+        await newReview.save()
+        res.status(201).json({ message: "Review added successfully" })
+    } catch (err) {
         res.status(500).json({
             message: err.message || err,
             error: "Review addition failed"
         })
-    })
+    }
 
 }
 
-export function getReviews(req,res) {
+export async function getReviews(req,res) {
     const user = req.user
-    if(user == null || user.type !== "admin") {
-        reviewModel.find({
-            isApproved: true
-        })
-        .then((reviews)=> {
-            res.json(reviews)
+
+    if(req.user == null){
+        res.status(401).json({
+            message: "Please login & try again"
         })
         return
     }
 
-    if(user.type == "admin") {
-        reviewModel.find()
-        .then((reviews)=> {
+    try{
+        if (req.user.type === "admin") {
+            const reviews = await reviewModel.find()
+            res.status(200).json(reviews)
+        } else {
+            const reviews = await reviewModel.find({
+                isApproved: true
+            })
             res.json(reviews)
+        }
+    }catch(err) {
+        res.status(500).json({
+            error: "Review loading failed"
         })
+        
     }
 }
 
-export function updateReview(req,res) {
+export async function updateReview(req,res) {
     const email = req.params.email
 
     if(req.user == null){
@@ -69,15 +74,12 @@ export function updateReview(req,res) {
 
     // Admin can update any review
     if (req.user.type === "admin") {
-        return reviewModel.updateOne({ email }, { $set: update })
-            .then(() =>
-                res.json(
-                    { message: "Review updated successfully" }
-                ))
-            .catch((err) =>
-                res.status(500).json(
-                    { error: "Review updating failed", details: err.message }
-                ));
+        try {
+            const reviews = await reviewModel.updateOne({ email }, { $set: update })
+            return res.json({ message: "Review updated successfully", review: reviews })
+        } catch (err) {
+            return res.status(500).json({ error: "Review update failed" })
+        }
     }
 
     // Customer can update only their own review
@@ -85,21 +87,19 @@ export function updateReview(req,res) {
         if (req.user.email !== email) {
             return res.status(403).json({ message: "Not authorized to update this review" });
         }
-        return reviewModel.updateOne({ email }, { $set: update })
-            .then(() =>
-                res.json(
-                    { message: "Review updated successfully" }
-                ))
-            .catch((err) =>
-                res.status(500).json(
-                    { error: "Review updating failed", details: err.message }
-                ));
+        try {
+            const reviews = await reviewModel.updateOne({ email }, { $set: update })
+            return res.json({ message: "Review updated successfully", review: reviews })
+        } catch (err) {
+            return res.status(500).json({ error: "Review update failed" })
+        }
     }
 
     return res.status(403).json({ message: "Not authorized" });
+
 }
 
-export function deleteReview(req,res) {
+export async function deleteReview(req,res) {
     const email = req.params.email
 
     if(req.user == null){
@@ -110,39 +110,29 @@ export function deleteReview(req,res) {
     }
     // Admin can delete any review
     if(req.user.type == "admin"){
-        reviewModel.deleteOne({
-        email: email
-    }).then(()=>{
-        res.json({
-            message: "Review deleted successfully"
-        })
-    }).catch(()=> {
-        res.status(500).json({
-            error: "Review deletion failed"
-        })
-    })
-    return
+        try {
+            await reviewModel.deleteOne({ email: email })
+            res.json({ message: "Review deleted successfully" })
+        } catch (err) {
+            res.status(500).json({ error: "Review deletion failed" })
+        }
+        return
     }
 
     // Customer can delete only their own review
     if(req.user.type == "customer") {
         if(req.user.email == email) {
-            reviewModel.deleteOne({
-                email: email
-            }).then(()=>{
-                res.json({
-                    message: "Review deleted successfully"
-                })
-            }).catch(()=> {
-                res.status(500).json({
-                    error: "Review deletion failed"
-                })
-            })
+            try {
+                await reviewModel.deleteOne({ email: email })
+                res.json({ message: "Review deleted successfully" })
+            } catch (err) {
+                res.status(500).json({ error: "Review deletion failed" })
+            }
         }
     }
 }
 
-export function approveReview(req,res) {
+export async function approveReview(req,res) {
     const email = req.params.email
 
     if(req.user == null || req.user.type !== "admin"){
@@ -152,20 +142,10 @@ export function approveReview(req,res) {
         return
     }
 
-    reviewModel.updateOne(
-        {
-            email: email
-        },
-        {
-            isApproved: true
-        }
-    ).then(()=>{
-        res.json({
-            message: "Review approved successfully"
-        })
-    }).catch(()=> {
-        res.status(500).json({
-            error: "Review approval failed"
-        })
-    })
+    try {
+        await reviewModel.updateOne({ email: email }, { isApproved: true })
+        res.json({ message: "Review approved successfully" })
+    } catch (err) {
+        res.status(500).json({ error: "Review approval failed" })
+    }
 }
