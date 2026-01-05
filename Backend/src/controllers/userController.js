@@ -29,6 +29,7 @@ export async function loginUser(req,res) {
                 lastName : user.lastName,
                 email : user.email,
                 type  : user.type,
+                phoneNumber : user.phoneNumber,
                 profilePicture: user.profilePicture
             }, process.env.JWT_SECRET)
 
@@ -39,4 +40,13 @@ export async function loginUser(req,res) {
     } catch (error) {
         return res.status(500).json({ message: 'Error logging in', error })
     }
+}
+
+
+export function isAdmin(req) {
+    return !!(req && req.user && req.user.type === "admin")
+}
+
+export function isCustomer(req) {
+    return !!(req && req.user && req.user.type === "customer")
 }
