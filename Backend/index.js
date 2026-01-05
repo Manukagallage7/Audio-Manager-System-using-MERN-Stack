@@ -6,6 +6,7 @@ import productRouter from './src/routes/productRouter.js';
 import reviewRouter from './src/routes/reviewRouter.js';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import inquiryRouter from './src/routes/inquiryRouter.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ let connection = mongoose.connection;
 app.use("/api/users", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/review", reviewRouter);
+app.use("/api/inquiry", inquiryRouter);
 
 app.listen(5000, ()=> {
         console.log("Server is running on port 5000");
