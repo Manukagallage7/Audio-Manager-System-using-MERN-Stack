@@ -15,7 +15,8 @@ export async function addProduct(req, res) {
         return
         } else {
             res.status(403).json({
-                message: "You are Unauthorized access"
+                message: "You are Unauthorized access",
+                error: "Product addition failed"
             })
             return
         }
