@@ -6,12 +6,12 @@ import productRouter from './src/routes/productRouter.js';
 import reviewRouter from './src/routes/reviewRouter.js';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import cors from 'cors';
 import inquiryRouter from './src/routes/inquiryRouter.js';
 
 dotenv.config();
-
-let app = express();
-
+const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use((req, res, next) => {
     const authHeader = req.header("Authorization") || req.header("authorization");
