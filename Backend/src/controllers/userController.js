@@ -33,7 +33,13 @@ export async function loginUser(req,res) {
                 profilePicture: user.profilePicture
             }, process.env.JWT_SECRET)
 
-            return res.status(200).json({ message: 'Login successful', token, user })
+            return res.status(200).json(
+                {
+                    message: 'Login successful',
+                    token,
+                    user
+                }
+            )
         }
 
         return res.status(401).json({ message: 'Invalid email or password' })
