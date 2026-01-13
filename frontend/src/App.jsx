@@ -4,6 +4,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import AdminPage from './pages/adminPage';
 import HomePage from './pages/homePage';
 import LoginPage from './user/loginPage';
+import RegisterPage from './user/registerPage';
 
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/adminPage/*" element={<AdminPage />} />
         <Route path="/homePage/*" element={<HomePage />} />
         <Route path="/loginPage" element={<LoginPage />} />
+        <Route path="/registerPage" element={<RegisterPage />} />
       </Routes>
     </BrowserRouter>
   )
