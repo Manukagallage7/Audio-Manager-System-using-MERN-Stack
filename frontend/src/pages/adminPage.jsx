@@ -6,6 +6,7 @@ import Users from "../admin/users.jsx";
 import Booking from "../admin/booking.jsx";
 import Dashboard from "../admin/dashboard.jsx";
 import AddItemPage from "../admin/addItemPage.jsx";
+import UpdateItemPage from "../admin/updateItemPage.jsx";
 
 export default function AdminPage() {
     return (
@@ -22,6 +23,7 @@ export default function AdminPage() {
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/items" element={<Items />} />
                     <Route path="/items/add" element={<AddItemPage />} />
+                    <Route path="/items/update" element={<UpdateItemPage />} />
                     <Route path="/users" element={<Users />} />
                 </Routes>
             </div>
