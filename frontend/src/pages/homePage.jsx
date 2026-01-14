@@ -5,6 +5,7 @@ import Gallery from '../home/gallery.jsx';
 import Contact from '../home/contact.jsx';
 import About from '../home/about.jsx';
 import Home from '../home/home.jsx';
+import ProductDetail from '../home/productDetail.jsx';
 
 export default function HomePage() {
     return (
@@ -14,6 +15,7 @@ export default function HomePage() {
                 <Routes path="/*">
                     <Route path="/" element={<Home />} />
                     <Route path="/items" element={<Items />} />
+                    <Route path="/items/:key" element={<ProductDetail />} />
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
