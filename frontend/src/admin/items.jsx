@@ -123,8 +123,8 @@ export default function Items() {
                         <td className="px-4 py-3 text-gray-700">${item.price}</td>
                         <td className="px-4 py-3">{item.dimensions}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 text-xs rounded-full ${item.availability ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {item.availability ? 'Available' : 'Unavailable'}
+                          <span className={`px-2 py-1 text-xs rounded-full ${item.availability !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {item.availability !== false ? 'Available' : 'Unavailable'}
                           </span>
                         </td>
                         <td className="px-4 py-3 flex gap-2">
