@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: ""
+    },
+    blocked: {
+        type: Boolean,
+        required: false,
+        default: false
     }
 })
 
