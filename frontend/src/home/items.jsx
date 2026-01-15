@@ -106,7 +106,7 @@ export default function Items() {
                                     <div>
                                         <span className="text-2xl font-bold text-blue-600">${product.price}</span>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => navigate(`/homePage/items/${product.key}`)}
                                         className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1"
                                     >
