@@ -1,4 +1,5 @@
 import {Link} from 'react-router-dom';
+import {FaCartShopping} from 'react-icons/fa6';
 
 export default function Header() {
     return (
@@ -9,6 +10,7 @@ export default function Header() {
             <Link to="/homePage/gallery" className='text-white text-3xl font-bold m-1'>Gallery</Link>
             <Link to="/homePage/contact" className='text-white text-3xl font-bold m-1'>Contact</Link>
             <Link to="/homePage/about" className='text-white text-3xl font-bold m-1'>About</Link>
+            <Link to="/homePage/booking" className='text-white text-3xl font-bold m-1'><FaCartShopping/></Link>
         </header>
 
     )
