@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import ImageSlider from "../components/imageSlider";
+import { addToCart } from "../utils/cart";
+
 
 export default function ProductOverview() {
     const { key } = useParams();
@@ -211,10 +213,14 @@ export default function ProductOverview() {
                                     {product.key}
                                 </span>
                             </div>
-
                             {/* Action Buttons */}
                             <div className="mt-auto flex gap-4">
                                 <button
+                                    onClick={product.availability !== false ? () => {
+                                        addToCart(product.key, 1);
+                                        toast.success("Added to cart")
+                                        navigate("/homePage/booking");
+                                    } : undefined}
                                     className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${product.availability !== false ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
                                     disabled={product.availability === false}
                                 >
@@ -229,10 +235,10 @@ export default function ProductOverview() {
                                     </svg>
                                 </button>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     );
 }

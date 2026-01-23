@@ -5,6 +5,7 @@ import Gallery from '../home/gallery.jsx';
 import Contact from '../home/contact.jsx';
 import About from '../home/about.jsx';
 import Home from '../home/home.jsx';
+import BookingPage from '../home/bookingPage.jsx';
 import ProductOverview from '../home/productOverview.jsx';
 
 export default function HomePage() {
@@ -19,6 +20,7 @@ export default function HomePage() {
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
+                    <Route path='/booking'element={<BookingPage/>}/>
                     <Route path="*" element={<h1>404: Page Not Found</h1>} />
                 </Routes>
             </div>
