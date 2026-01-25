@@ -70,21 +70,28 @@ export default function Items() {
 
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto ">
-        <div className="relative mb-4 ">
-          <h1 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-            Items
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="relative mb-8">
+          <h1 className="text-center text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+            Items Management
           </h1>
-          <Link to="/adminPage/items/add" className="absolute right-0 top-1/2 transform -translate-y-1/2 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow">
+          <p className="text-center text-gray-500 mt-2">Manage and organize your product inventory</p>
+          <Link to="/adminPage/items/add" className="absolute right-0 top-1/2 transform -translate-y-1/2 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl">
             <CiCirclePlus className="text-xl" />
-            <span className="text-sm">Add Item</span>
+            <span className="text-sm font-medium">Add Item</span>
           </Link>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="p-4 border-b">
-            <input value={searchQuery} onChange={handleSearch} className="w-full border rounded-md px-3 py-2 text-sm" placeholder="Search items..." />
+        <div className="bg-white shadow-lg rounded-xl overflow-hidden">
+          <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
+            <div className="relative">
+              <input value={searchQuery} onChange={handleSearch} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm pl-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="Search items..." />
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
           </div>
 
           <div className="p-4">
