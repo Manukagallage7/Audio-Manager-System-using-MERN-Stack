@@ -3,142 +3,446 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { addToCart } from "../utils/cart";
+import { FiSearch, FiFilter, FiGrid, FiList, FiShoppingCart, FiEye, FiHeadphones, FiX, FiChevronDown, FiStar, FiPackage } from 'react-icons/fi';
 
 export default function Items() {
-    const [state, setState] = useState("loading") //  loading, success, error
-    const [products, setProducts] = useState([])
+    const [state, setState] = useState("loading");
+    const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("all");
+    const [priceRange, setPriceRange] = useState("all");
+    const [sortBy, setSortBy] = useState("default");
+    const [viewMode, setViewMode] = useState("grid");
     const navigate = useNavigate();
 
+    const categories = ["all", "speakers", "microphones", "amplifiers", "mixers", "headphones", "accessories"];
+    const priceRanges = [
+        { value: "all", label: "All Prices" },
+        { value: "0-50", label: "Under $50" },
+        { value: "50-100", label: "$50 - $100" },
+        { value: "100-200", label: "$100 - $200" },
+        { value: "200+", label: "$200+" }
+    ];
+
     useEffect(() => {
-        if(state === "loading"){
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/product`)
-            .then(res => {
-                setProducts(res.data.products || []);
-                setState("success");
-            })
-            .catch(error => {
-                toast.error(error?.response?.data?.message || "There was an error fetching the products!");
-                setState("error");
-            });
+        if (state === "loading") {
+            axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/product`)
+                .then(res => {
+                    setProducts(res.data.products || []);
+                    setFilteredProducts(res.data.products || []);
+                    setState("success");
+                })
+                .catch(error => {
+                    toast.error(error?.response?.data?.message || "There was an error fetching the products!");
+                    setState("error");
+                });
         }
-    }, [state])
+    }, [state]);
+
+    // Filter and sort products
+    useEffect(() => {
+        let result = [...products];
+
+        // Search filter
+        if (searchQuery) {
+            result = result.filter(p => 
+                p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.category?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // Category filter
+        if (selectedCategory !== "all") {
+            result = result.filter(p => p.category?.toLowerCase() === selectedCategory);
+        }
+
+        // Price filter
+        if (priceRange !== "all") {
+            const [min, max] = priceRange.split("-").map(Number);
+            if (max) {
+                result = result.filter(p => p.price >= min && p.price <= max);
+            } else {
+                result = result.filter(p => p.price >= 200);
+            }
+        }
+
+        // Sorting
+        switch (sortBy) {
+            case "price-low":
+                result.sort((a, b) => a.price - b.price);
+                break;
+            case "price-high":
+                result.sort((a, b) => b.price - a.price);
+                break;
+            case "name":
+                result.sort((a, b) => a.name?.localeCompare(b.name));
+                break;
+            default:
+                break;
+        }
+
+        setFilteredProducts(result);
+    }, [searchQuery, selectedCategory, priceRange, sortBy, products]);
+
+    const handleAddToCart = (product) => {
+        addToCart(product.key, 1);
+        toast.success(`${product.name} added to cart!`);
+    };
+
     return (
-        <div className="w-full h-full flex-wrap justify-center pt-4">
-            {state === "loading" &&
-            <div className="w-full h-[60vh] flex flex-col justify-center items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden">
+                {/* Background Effects */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500 rounded-full blur-3xl"></div>
+                    <div className="absolute top-40 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
                 </div>
-                <p className="text-gray-600 text-lg animate-pulse">Loading products...</p>
-            </div>
-            }
-            {state === "error" &&
-            <div className="w-full h-[60vh] flex flex-col justify-center items-center gap-4">
-                <div className="relative">
-                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center animate-pulse">
-                        <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+
+                <div className="relative max-w-7xl mx-auto px-4 py-12">
+                    {/* Header */}
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-6">
+                            <FiHeadphones className="text-indigo-400" />
+                            <span className="text-indigo-400 text-sm font-medium">Premium Audio Equipment</span>
+                        </div>
+                        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+                            Browse Our <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Collection</span>
+                        </h1>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                            Discover professional audio equipment for your events. From speakers to mixers, we have everything you need.
+                        </p>
                     </div>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800">Oops! Something went wrong</h3>
-                <p className="text-gray-500 text-center max-w-md">We couldn't load the products. Please check your connection and try again.</p>
-                <button
-                    onClick={() => setState("loading")}
-                    className="mt-2 px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-300 hover:scale-105 flex items-center gap-2"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Try Again
-                </button>
-            </div>
-            }
-            {state === "success" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 w-full">
-                    {products.map(product => (
-                        <div key={product.key} className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                            {/* Product Image */}
-                            <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                                {product.image && product.image.length > 0 ? (
-                                    <img 
-                                        src={product.image[0]} 
-                                        alt={product.name} 
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
+
+                    {/* Search and Filter Bar */}
+                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 mb-8">
+                        <div className="flex flex-col lg:flex-row gap-4">
+                            {/* Search Input */}
+                            <div className="flex-1 relative">
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+                                <input
+                                    type="text"
+                                    placeholder="Search equipment..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 pl-12 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                />
+                                {searchQuery && (
+                                    <button 
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                    >
+                                        <FiX />
+                                    </button>
                                 )}
-                                {/* Category Badge */}
-                                <span className="absolute top-3 left-3 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full capitalize">
-                                    {product.category}
-                                </span>
-                                {/* Availability Badge */}
-                                <span className={`absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full ${product.availability !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {product.availability !== false ? 'In Stock' : 'Out of Stock'}
-                                </span>
                             </div>
-                            
-                            {/* Product Details */}
-                            <div className="p-4">
-                                <h2 className="text-lg font-bold text-gray-800 mb-1 truncate group-hover:text-blue-600 transition-colors">
-                                    {product.name}
-                                </h2>
-                                <p className="text-gray-500 text-sm mb-3 line-clamp-2 h-10">
-                                    {product.description}
-                                </p>
-                                
-                                {/* Dimensions */}
-                                <div className="flex items-center gap-1 text-gray-400 text-xs mb-3">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                    </svg>
-                                    <span>{product.dimensions}</span>
-                                </div>
-                                
-                                {/* Price and Action */}
-                                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                    <div>
-                                        <span className="text-2xl font-bold text-blue-600">${product.price}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => navigate(`/homePage/items/${product.key}`)}
-                                            className="px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                addToCart(product.key, 1);
-                                                toast.success(`${product.name} added to cart!`);
-                                                navigate('/homePage/booking');
-                                            }}
-                                            className="px-3 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center gap-1"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                            Add
-                                        </button>
-                                    </div>
-                                </div>
+
+                            {/* Category Filter */}
+                            <div className="relative">
+                                <select
+                                    value={selectedCategory}
+                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                    className="appearance-none bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer min-w-[160px]"
+                                >
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat} className="bg-slate-800">
+                                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                        </option>
+                                    ))}
+                                </select>
+                                <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            </div>
+
+                            {/* Price Range */}
+                            <div className="relative">
+                                <select
+                                    value={priceRange}
+                                    onChange={(e) => setPriceRange(e.target.value)}
+                                    className="appearance-none bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer min-w-[140px]"
+                                >
+                                    {priceRanges.map(range => (
+                                        <option key={range.value} value={range.value} className="bg-slate-800">
+                                            {range.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            </div>
+
+                            {/* Sort By */}
+                            <div className="relative">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="appearance-none bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer min-w-[150px]"
+                                >
+                                    <option value="default" className="bg-slate-800">Default</option>
+                                    <option value="price-low" className="bg-slate-800">Price: Low to High</option>
+                                    <option value="price-high" className="bg-slate-800">Price: High to Low</option>
+                                    <option value="name" className="bg-slate-800">Name: A-Z</option>
+                                </select>
+                                <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            </div>
+
+                            {/* View Mode Toggle */}
+                            <div className="flex items-center gap-2 bg-slate-700/50 border border-slate-600 rounded-xl p-1">
+                                <button
+                                    onClick={() => setViewMode("grid")}
+                                    className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-white"}`}
+                                >
+                                    <FiGrid className="text-xl" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("list")}
+                                    className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-white"}`}
+                                >
+                                    <FiList className="text-xl" />
+                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
 
+                        {/* Results Count */}
+                        <div className="mt-4 flex items-center justify-between text-sm">
+                            <p className="text-gray-400">
+                                Showing <span className="text-white font-medium">{filteredProducts.length}</span> of <span className="text-white font-medium">{products.length}</span> products
+                            </p>
+                            {(searchQuery || selectedCategory !== "all" || priceRange !== "all") && (
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery("");
+                                        setSelectedCategory("all");
+                                        setPriceRange("all");
+                                        setSortBy("default");
+                                    }}
+                                    className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                                >
+                                    <FiX className="text-sm" />
+                                    Clear filters
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Loading State */}
+                    {state === "loading" && (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="relative">
+                                <div className="w-16 h-16 border-4 border-indigo-500/30 rounded-full"></div>
+                                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-indigo-500 rounded-full animate-spin"></div>
+                            </div>
+                            <p className="text-gray-400 mt-4 animate-pulse">Loading equipment...</p>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {state === "error" && (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="w-20 h-20 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6">
+                                <FiX className="text-red-400 text-4xl" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-2">Something went wrong</h3>
+                            <p className="text-gray-400 mb-6">We couldn't load the products. Please try again.</p>
+                            <button
+                                onClick={() => setState("loading")}
+                                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    )}
+
+                    {/* No Results */}
+                    {state === "success" && filteredProducts.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="w-20 h-20 bg-slate-700/50 border border-slate-600 rounded-full flex items-center justify-center mb-6">
+                                <FiPackage className="text-gray-400 text-4xl" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
+                            <p className="text-gray-400 mb-6">Try adjusting your search or filter criteria.</p>
+                            <button
+                                onClick={() => {
+                                    setSearchQuery("");
+                                    setSelectedCategory("all");
+                                    setPriceRange("all");
+                                }}
+                                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
+                            >
+                                Clear Filters
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Products Grid */}
+                    {state === "success" && filteredProducts.length > 0 && (
+                        <div className={viewMode === "grid" 
+                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                            : "flex flex-col gap-4"
+                        }>
+                            {filteredProducts.map(product => (
+                                viewMode === "grid" ? (
+                                    // Grid Card
+                                    <div 
+                                        key={product.key} 
+                                        className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-1"
+                                    >
+                                        {/* Product Image */}
+                                        <div className="relative h-52 bg-gradient-to-br from-slate-700/50 to-slate-800/50 overflow-hidden">
+                                            {product.image && product.image.length > 0 ? (
+                                                <img 
+                                                    src={product.image[0]} 
+                                                    alt={product.name} 
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <FiHeadphones className="text-6xl text-slate-600" />
+                                                </div>
+                                            )}
+                                            
+                                            {/* Overlay on Hover */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            
+                                            {/* Category Badge */}
+                                            <span className="absolute top-3 left-3 px-3 py-1 bg-indigo-500/90 backdrop-blur-sm text-white text-xs font-medium rounded-full capitalize">
+                                                {product.category}
+                                            </span>
+                                            
+                                            {/* Availability Badge */}
+                                            <span className={`absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full backdrop-blur-sm ${
+                                                product.availability !== false 
+                                                    ? 'bg-emerald-500/90 text-white' 
+                                                    : 'bg-red-500/90 text-white'
+                                            }`}>
+                                                {product.availability !== false ? 'Available' : 'Unavailable'}
+                                            </span>
+
+                                            {/* Quick Actions on Hover */}
+                                            <div className="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                                <button
+                                                    onClick={() => navigate(`/items/${product.key}`)}
+                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white text-sm font-medium rounded-lg hover:bg-white/20 transition-colors"
+                                                >
+                                                    <FiEye />
+                                                    View
+                                                </button>
+                                                <button
+                                                    onClick={() => handleAddToCart(product)}
+                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                                                >
+                                                    <FiShoppingCart />
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Product Details */}
+                                        <div className="p-5">
+                                            <h2 className="text-lg font-semibold text-white mb-2 truncate group-hover:text-indigo-400 transition-colors">
+                                                {product.name}
+                                            </h2>
+                                            <p className="text-gray-400 text-sm mb-4 line-clamp-2 h-10">
+                                                {product.description}
+                                            </p>
+                                            
+                                            {/* Price */}
+                                            <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                                                <div>
+                                                    <span className="text-xs text-gray-500">Per day</span>
+                                                    <p className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                                        ${product.price}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-amber-400">
+                                                    <FiStar className="fill-current" />
+                                                    <span className="text-sm font-medium">4.8</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // List Card
+                                    <div 
+                                        key={product.key}
+                                        className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300 flex"
+                                    >
+                                        {/* Product Image */}
+                                        <div className="relative w-48 h-40 flex-shrink-0 bg-gradient-to-br from-slate-700/50 to-slate-800/50 overflow-hidden">
+                                            {product.image && product.image.length > 0 ? (
+                                                <img 
+                                                    src={product.image[0]} 
+                                                    alt={product.name} 
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <FiHeadphones className="text-4xl text-slate-600" />
+                                                </div>
+                                            )}
+                                            <span className="absolute top-3 left-3 px-3 py-1 bg-indigo-500/90 backdrop-blur-sm text-white text-xs font-medium rounded-full capitalize">
+                                                {product.category}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* Product Details */}
+                                        <div className="flex-1 p-5 flex flex-col justify-between">
+                                            <div>
+                                                <div className="flex items-start justify-between gap-4 mb-2">
+                                                    <h2 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors">
+                                                        {product.name}
+                                                    </h2>
+                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                                                        product.availability !== false 
+                                                            ? 'bg-emerald-500/20 text-emerald-400' 
+                                                            : 'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                        {product.availability !== false ? 'Available' : 'Unavailable'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-400 text-sm line-clamp-2">
+                                                    {product.description}
+                                                </p>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between mt-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div>
+                                                        <span className="text-xs text-gray-500">Per day</span>
+                                                        <p className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                                            ${product.price}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-amber-400">
+                                                        <FiStar className="fill-current" />
+                                                        <span className="text-sm font-medium">4.8</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => navigate(`/items/${product.key}`)}
+                                                        className="px-4 py-2 bg-slate-700/50 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <FiEye />
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAddToCart(product)}
+                                                        className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2"
+                                                    >
+                                                        <FiShoppingCart />
+                                                        Add to Cart
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
-    )
+    );
 }
