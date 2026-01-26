@@ -261,6 +261,7 @@ export default function Booking() {
                     <tr>
                       <th className="px-4 py-3.5 font-semibold rounded-tl-lg">Order ID</th>
                       <th className="px-4 py-3.5 font-semibold">Customer Email</th>
+                      <th className="px-4 py-3.5 font-semibold">Order Placed</th>
                       <th className="px-4 py-3.5 font-semibold">Booking Period</th>
                       <th className="px-4 py-3.5 font-semibold">Days</th>
                       <th className="px-4 py-3.5 font-semibold">Items</th>
@@ -281,6 +282,16 @@ export default function Booking() {
                           <div className="flex items-center gap-2">
                             <FiMail className="text-gray-400" />
                             <span className="text-gray-700">{booking.email}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-gray-700 text-sm font-medium">
+                              {formatDate(booking.orderDate)}
+                            </span>
+                            <span className="text-gray-400 text-xs">
+                              {new Date(booking.orderDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-4">
