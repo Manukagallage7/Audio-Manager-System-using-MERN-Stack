@@ -4,14 +4,17 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import ImageSlider from "../components/imageSlider";
 import { addToCart } from "../utils/cart";
-
+import { FiArrowLeft, FiShoppingCart, FiHeart, FiShare2, FiCheck, FiPackage, FiTruck, FiShield, FiStar, FiImage, FiMaximize, FiBox, FiTag, FiInfo, FiHeadphones } from 'react-icons/fi';
 
 export default function ProductOverview() {
     const { key } = useParams();
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [aspectRatio, setAspectRatio] = useState("16:9"); // "16:9", "9:16", or "1:1"
+    const [aspectRatio, setAspectRatio] = useState("16:9");
+    const [quantity, setQuantity] = useState(1);
+    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [activeTab, setActiveTab] = useState('description');
 
     useEffect(() => {
         async function fetchProduct() {
@@ -27,7 +30,6 @@ export default function ProductOverview() {
         fetchProduct();
     }, [key]);
 
-    // Detect image aspect ratio from first image
     useEffect(() => {
         if (product?.image?.[0]) {
             const img = new Image();
@@ -47,119 +49,136 @@ export default function ProductOverview() {
 
     const getAspectClass = () => {
         switch (aspectRatio) {
-            case "16:9": return "aspect-video w-full"; // 16:9
-            case "9:16": return "aspect-[9/16] h-[450px]"; // 9:16 - fixed height, width auto-calculated
-            case "1:1": return "aspect-square w-full max-w-[400px]"; // 1:1
+            case "16:9": return "aspect-video w-full";
+            case "9:16": return "aspect-[9/16] h-[450px]";
+            case "1:1": return "aspect-square w-full max-w-[400px]";
             default: return "aspect-video w-full";
         }
     };
 
+    const handleAddToCart = () => {
+        addToCart(product.key, quantity);
+        toast.success(`${quantity} item${quantity > 1 ? 's' : ''} added to cart`);
+        navigate("/booking");
+    };
+
+    const features = [
+        { icon: FiTruck, title: 'Free Delivery', desc: 'On orders over $100' },
+        { icon: FiShield, title: 'Quality Guaranteed', desc: 'Professionally maintained' },
+        { icon: FiPackage, title: 'Easy Returns', desc: '30-day return policy' }
+    ];
+
     if (loading) {
         return (
-            <div className="w-full h-[60vh] flex flex-col justify-center items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-indigo-500/30 rounded-full"></div>
+                        <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-indigo-500 rounded-full animate-spin"></div>
+                    </div>
+                    <p className="text-gray-400 animate-pulse">Loading product...</p>
                 </div>
-                <p className="text-gray-600 text-lg animate-pulse">Loading product...</p>
             </div>
         );
     }
 
     if (!product) {
         return (
-            <div className="w-full h-[60vh] flex flex-col justify-center items-center gap-4">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                    <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center">
+                        <FiPackage className="text-red-400 text-4xl" />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-white mb-2">Product Not Found</h3>
+                    <p className="text-gray-400 mb-6">The product you're looking for doesn't exist.</p>
+                    <button
+                        onClick={() => navigate("/items")}
+                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
+                    >
+                        Back to Items
+                    </button>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800">Product Not Found</h3>
-                <button
-                    onClick={() => navigate("/homePage/items")}
-                    className="mt-2 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all"
-                >
-                    Back to Items
-                </button>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-            <div className="max-w-6xl mx-auto">
-                {/* Back Button */}
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+            {/* Background Effects */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500 rounded-full blur-3xl"></div>
+                <div className="absolute top-40 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+            </div>
+
+            <div className="relative max-w-7xl mx-auto px-4 py-8">
+                {/* Breadcrumb / Back Button */}
                 <button
-                    onClick={() => navigate("/homePage/items")}
-                    className="mb-6 flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                    onClick={() => navigate("/items")}
+                    className="mb-8 flex items-center gap-2 text-gray-400 hover:text-indigo-400 transition-colors group"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Items
+                    <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                    <span>Back to Items</span>
                 </button>
 
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
-                        {/* Image Gallery with Slider */}
-                        <div className="space-y-4">
+                {/* Main Product Section */}
+                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                        {/* Image Gallery Section */}
+                        <div className="p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-slate-700/50">
                             {/* Gallery Header */}
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                                        <FiImage className="text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-semibold text-gray-800">Product Gallery</h3>
-                                        <p className="text-xs text-gray-500">{product.image?.length || 0} images • Click to zoom</p>
+                                        <h3 className="text-sm font-semibold text-white">Product Gallery</h3>
+                                        <p className="text-xs text-gray-500">{product.image?.length || 0} images</p>
                                     </div>
                                 </div>
                                 
                                 {/* Aspect Ratio Toggle */}
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-400 hidden sm:block">Ratio</span>
-                                    <div className="flex gap-0.5 bg-gray-100 p-1 rounded-xl">
-                                        <button
-                                            onClick={() => setAspectRatio("16:9")}
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 ${aspectRatio === "16:9" ? 'bg-white shadow-md text-blue-600 scale-105' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
-                                        >
-                                            16:9
-                                        </button>
-                                        <button
-                                            onClick={() => setAspectRatio("1:1")}
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 ${aspectRatio === "1:1" ? 'bg-white shadow-md text-blue-600 scale-105' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
-                                        >
-                                            1:1
-                                        </button>
-                                        <button
-                                            onClick={() => setAspectRatio("9:16")}
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 ${aspectRatio === "9:16" ? 'bg-white shadow-md text-blue-600 scale-105' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
-                                        >
-                                            9:16
-                                        </button>
+                                    <FiMaximize className="text-gray-500 text-sm" />
+                                    <div className="flex gap-1 bg-slate-700/50 p-1 rounded-xl">
+                                        {["16:9", "1:1", "9:16"].map((ratio) => (
+                                            <button
+                                                key={ratio}
+                                                onClick={() => setAspectRatio(ratio)}
+                                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                                                    aspectRatio === ratio 
+                                                        ? 'bg-indigo-600 text-white' 
+                                                        : 'text-gray-400 hover:text-white'
+                                                }`}
+                                            >
+                                                {ratio}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Availability Badge - Outside slider */}
-                            <div className="flex justify-end mb-2">
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-md ${product.availability !== false ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                                    <span className={`w-2 h-2 rounded-full ${product.availability !== false ? 'bg-white animate-pulse' : 'bg-white'}`}></span>
-                                    <span className="text-sm font-semibold">
-                                        {product.availability !== false ? 'In Stock' : 'Out of Stock'}
+                            {/* Availability Badge */}
+                            <div className="flex justify-end mb-4">
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+                                    product.availability !== false 
+                                        ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400' 
+                                        : 'bg-red-500/20 border border-red-500/30 text-red-400'
+                                }`}>
+                                    <span className={`w-2 h-2 rounded-full ${
+                                        product.availability !== false ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
+                                    }`}></span>
+                                    <span className="text-sm font-medium">
+                                        {product.availability !== false ? 'Available' : 'Out of Stock'}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Main Image Slider Container */}
-                            <div className="relative group flex items-center justify-center min-h-[300px]">
-                                {/* Decorative elements */}
-                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                            {/* Main Image Slider */}
+                            <div className="relative group flex items-center justify-center">
+                                <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
                                 
-                                <div className={`relative ${getAspectClass()} mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden shadow-xl`}>
+                                <div className={`relative ${getAspectClass()} mx-auto bg-slate-700/50 rounded-2xl overflow-hidden`}>
                                     <ImageSlider 
                                         images={product.image} 
                                         showThumbnails={false}
@@ -170,75 +189,154 @@ export default function ProductOverview() {
                             </div>
                         </div>
 
-                        {/* Product Info */}
-                        <div className="flex flex-col">
-                            {/* Category Badge */}
-                            <span className="inline-block w-fit px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full capitalize mb-4">
-                                {product.category}
-                            </span>
+                        {/* Product Info Section */}
+                        <div className="p-6 lg:p-8 flex flex-col">
+                            {/* Category & Rating */}
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-sm font-medium rounded-full capitalize">
+                                    <FiTag className="text-xs" />
+                                    {product.category}
+                                </span>
+                                <div className="flex items-center gap-1 text-amber-400">
+                                    {[...Array(5)].map((_, i) => (
+                                        <FiStar key={i} className={`${i < 4 ? 'fill-current' : ''}`} />
+                                    ))}
+                                    <span className="text-gray-400 text-sm ml-2">(4.8)</span>
+                                </div>
+                            </div>
 
                             {/* Product Name */}
-                            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4">
                                 {product.name}
                             </h1>
 
                             {/* Price */}
-                            <div className="mb-6">
-                                <span className="text-4xl font-bold text-blue-600">${product.price}</span>
+                            <div className="flex items-baseline gap-3 mb-6">
+                                <span className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                    ${product.price}
+                                </span>
+                                <span className="text-gray-500 text-sm">/ per day</span>
                             </div>
 
-                            {/* Description */}
-                            <div className="mb-6">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
-                                <p className="text-gray-600 leading-relaxed">
-                                    {product.description}
-                                </p>
+                            {/* Tabs */}
+                            <div className="flex gap-2 mb-4 border-b border-slate-700/50 pb-4">
+                                {[
+                                    { id: 'description', label: 'Description', icon: FiInfo },
+                                    { id: 'specs', label: 'Specifications', icon: FiBox }
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                            activeTab === tab.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'text-gray-400 hover:text-white hover:bg-slate-700/50'
+                                        }`}
+                                    >
+                                        <tab.icon />
+                                        {tab.label}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* Dimensions */}
-                            <div className="mb-6">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Dimensions</h3>
-                                <div className="flex items-center gap-2 text-gray-600">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                    </svg>
-                                    <span>{product.dimensions}</span>
+                            {/* Tab Content */}
+                            <div className="mb-6 flex-1">
+                                {activeTab === 'description' && (
+                                    <p className="text-gray-400 leading-relaxed">
+                                        {product.description}
+                                    </p>
+                                )}
+                                {activeTab === 'specs' && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between py-3 border-b border-slate-700/50">
+                                            <span className="text-gray-400">Dimensions</span>
+                                            <span className="text-white font-medium">{product.dimensions}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between py-3 border-b border-slate-700/50">
+                                            <span className="text-gray-400">Product ID</span>
+                                            <span className="text-white font-mono bg-slate-700/50 px-3 py-1 rounded-lg text-sm">{product.key}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between py-3 border-b border-slate-700/50">
+                                            <span className="text-gray-400">Category</span>
+                                            <span className="text-white capitalize">{product.category}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between py-3">
+                                            <span className="text-gray-400">Availability</span>
+                                            <span className={product.availability !== false ? 'text-emerald-400' : 'text-red-400'}>
+                                                {product.availability !== false ? 'In Stock' : 'Out of Stock'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Quantity Selector */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <span className="text-gray-400 text-sm">Quantity:</span>
+                                <div className="flex items-center gap-2 bg-slate-700/50 border border-slate-600 rounded-xl p-1">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-600 rounded-lg transition-all"
+                                    >
+                                        -
+                                    </button>
+                                    <span className="w-12 text-center text-white font-medium">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(quantity + 1)}
+                                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-600 rounded-lg transition-all"
+                                    >
+                                        +
+                                    </button>
                                 </div>
                             </div>
 
-                            {/* Product Key */}
-                            <div className="mb-8">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Product ID</h3>
-                                <span className="text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded">
-                                    {product.key}
-                                </span>
-                            </div>
                             {/* Action Buttons */}
-                            <div className="mt-auto flex gap-4">
+                            <div className="flex gap-3">
                                 <button
-                                    onClick={product.availability !== false ? () => {
-                                        addToCart(product.key, 1);
-                                        toast.success("Added to cart")
-                                        navigate("/homePage/booking");
-                                    } : undefined}
-                                    className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${product.availability !== false ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                                    onClick={product.availability !== false ? handleAddToCart : undefined}
                                     disabled={product.availability === false}
+                                    className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 ${
+                                        product.availability !== false 
+                                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30' 
+                                            : 'bg-slate-700 text-gray-500 cursor-not-allowed'
+                                    }`}
                                 >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
+                                    <FiShoppingCart className="text-xl" />
                                     {product.availability !== false ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
-                                <button className="py-3 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
+                                <button 
+                                    onClick={() => setIsWishlisted(!isWishlisted)}
+                                    className={`p-4 rounded-xl border transition-all ${
+                                        isWishlisted 
+                                            ? 'bg-pink-500/20 border-pink-500/30 text-pink-400' 
+                                            : 'border-slate-600 text-gray-400 hover:text-pink-400 hover:border-pink-500/30'
+                                    }`}
+                                >
+                                    <FiHeart className={isWishlisted ? 'fill-current' : ''} />
                                 </button>
-                            </div>
+                                <button className="p-4 rounded-xl border border-slate-600 text-gray-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-all">
+                                    <FiShare2 />
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Features Section */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    {features.map((feature, index) => (
+                        <div key={index} className="bg-slate-800/30 border border-slate-700/30 rounded-2xl p-6 flex items-center gap-4 hover:border-indigo-500/30 transition-all">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center">
+                                <feature.icon className="text-indigo-400 text-xl" />
+                            </div>
+                            <div>
+                                <h4 className="text-white font-medium">{feature.title}</h4>
+                                <p className="text-gray-500 text-sm">{feature.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
+        </div>
     );
 }

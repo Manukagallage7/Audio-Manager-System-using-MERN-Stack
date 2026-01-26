@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FiPackage, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiEye, FiX, FiShoppingBag, FiDollarSign, FiTruck, FiFilter, FiSearch } from 'react-icons/fi';
+import { FiPackage, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiEye, FiX, FiShoppingBag, FiDollarSign, FiTruck, FiFilter, FiSearch, FiStar } from 'react-icons/fi';
 
 export default function Gallery() {
     const [orders, setOrders] = useState([]);
@@ -10,7 +10,38 @@ export default function Gallery() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [filter, setFilter] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewOrder, setReviewOrder] = useState(null);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [submittingReview, setSubmittingReview] = useState(false);
     const navigate = useNavigate();
+    // Submit review to backend
+    async function handleSubmitReview() {
+        if (!reviewRating || !reviewComment) {
+            toast.error("Please provide a rating and comment.");
+            return;
+        }
+        setSubmittingReview(true);
+        const token = localStorage.getItem('token');
+        try {
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/review/`, {
+                rating: reviewRating,
+                comment: reviewComment,
+                orderId: reviewOrder.orderId || reviewOrder._id,
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success("Review submitted! Awaiting admin approval.");
+            setShowReviewModal(false);
+            setReviewOrder(null);
+            setReviewRating(0);
+            setReviewComment("");
+        } catch (err) {
+            toast.error("Failed to submit review.");
+        }
+        setSubmittingReview(false);
+    }
 
     useEffect(() => {
         fetchOrders();
@@ -255,7 +286,7 @@ export default function Gallery() {
                         {filteredOrders.map((order) => {
                             const status = getStatusConfig(order);
                             const StatusIcon = status.icon;
-                            
+                            const canReview = status.label === 'Approved';
                             return (
                                 <div 
                                     key={order.orderId || order._id}
@@ -309,6 +340,15 @@ export default function Gallery() {
                                                 <FiEye />
                                                 <span className="hidden sm:inline">View Details</span>
                                             </button>
+                                            {canReview && (
+                                                <button
+                                                    onClick={() => { setReviewOrder(order); setShowReviewModal(true); }}
+                                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all flex items-center gap-2"
+                                                >
+                                                    <FiStar />
+                                                    <span className="hidden sm:inline">Add Review</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -333,6 +373,61 @@ export default function Gallery() {
                                 </div>
                             );
                         })}
+                                {/* Review Modal */}
+                                {showReviewModal && (
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                                        <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-8 text-center relative animate-fadeInUp">
+                                            <FiStar className="mx-auto text-4xl text-emerald-400 mb-4 animate-pulse" />
+                                            <h3 className="text-xl font-bold text-white mb-2">Add a Review</h3>
+                                            <p className="text-gray-400 mb-6">Share your experience for this order. Your review will be visible after admin approval.</p>
+                                            <div className="flex flex-col gap-4 mb-4">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    {[1,2,3,4,5].map(star => (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => setReviewRating(star)}
+                                                            className={star <= reviewRating ? "text-emerald-400" : "text-gray-500"}
+                                                        >
+                                                            <FiStar className="text-2xl" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <textarea
+                                                    value={reviewComment}
+                                                    onChange={e => setReviewComment(e.target.value)}
+                                                    rows={4}
+                                                    placeholder="Write your review..."
+                                                    className="w-full px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                />
+                                            </div>
+                                            <div className="flex gap-4 justify-center">
+                                                <button
+                                                    onClick={handleSubmitReview}
+                                                    disabled={submittingReview}
+                                                    className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow hover:from-emerald-600 hover:to-teal-600 transition-all flex items-center gap-2"
+                                                >
+                                                    {submittingReview ? "Submitting..." : "Submit Review"}
+                                                </button>
+                                                <button
+                                                    onClick={() => { setShowReviewModal(false); setReviewOrder(null); setReviewRating(0); setReviewComment(""); }}
+                                                    className="px-6 py-3 rounded-xl font-semibold bg-slate-800 text-gray-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all flex items-center gap-2"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                <style>{`
+                                    @keyframes fadeInUp {
+                                        from { opacity: 0; transform: translateY(30px); }
+                                        to { opacity: 1; transform: translateY(0); }
+                                    }
+                                    .animate-fadeInUp {
+                                        animation: fadeInUp 0.4s ease-out forwards;
+                                    }
+                                `}</style>
                     </div>
                 )}
             </div>
