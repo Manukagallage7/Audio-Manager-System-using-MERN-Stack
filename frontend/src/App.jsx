@@ -5,17 +5,18 @@ import AdminPage from './pages/adminPage';
 import HomePage from './pages/homePage';
 import LoginPage from './user/loginPage';
 import RegisterPage from './user/registerPage';
+import Home from './home/home';
 
 
 const App = () => {
   return (
     <BrowserRouter>
     <Toaster position='top-right' />
-      <Routes path="/">
+      <Routes>
         <Route path="/adminPage/*" element={<AdminPage />} />
-        <Route path="/homePage/*" element={<HomePage />} />
-        <Route path="/loginPage" element={<LoginPage />} />
-        <Route path="/registerPage" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path='/*' element={<HomePage />}/>
       </Routes>
     </BrowserRouter>
   )
