@@ -2,6 +2,7 @@ import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import axios from 'axios';
 import nodemailer from 'nodemailer';
 
 dotenv.config();
@@ -131,6 +132,66 @@ export async function unblockUser(req, res) {
 
 export async function googleLogin(req, res) {
     const accessToken = req.body.accessToken
+    console.log(accessToken)
+
+    try {
+        const response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        console.log(response.data)
+
+        const user = await User.findOne({
+            email: response.data.email,
+        })
+
+        if(user != null) {
+            const token = jwt.sign({
+                firstName : user.firstName,
+                lastName : user.lastName,
+                email : user.email,
+                type  : user.type,
+                phoneNumber : user.phoneNumber,
+                profilePicture: user.profilePicture,
+                blocked: user.blocked,
+                emailVerified: user.emailVerified
+            }, process.env.JWT_SECRET)
+
+            res.json({ message: 'Google login successful', user: user, token: token })
+        } else {
+            const newUser = new User({
+                email: response.data.email,
+                password: bcrypt.hashSync(response.data.sub, 10),
+                isBlocked: false,
+                role: 'customer',
+                firstName: response.data.given_name,
+                lastName: response.data.family_name,
+                address: "Not Given",
+                phoneNumber: "Not Given",
+                profilePicture: response.data.picture,
+                emailVerified: response.data.email_verified
+            })
+            const savedUser = await newUser.save();
+            const token = jwt.sign({
+                firstName : savedUser.firstName,
+                lastName : savedUser.lastName,
+                email : savedUser.email,
+                type  : savedUser.type,
+                phoneNumber : savedUser.phoneNumber,
+                profilePicture: savedUser.profilePicture,
+                blocked: savedUser.blocked,
+                emailVerified: savedUser.emailVerified
+        },
+            process.env.JWT_SECRET
+        )
+
+            return res.status(200).json({ message: 'Google login successful',token: token, user: savedUser });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Error during Google login', error });
+    }
 }
 
 export async function sendOTP(req, res){
