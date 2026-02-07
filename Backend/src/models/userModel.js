@@ -3,13 +3,11 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     lastName:{
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     email: {
         type: String,
@@ -23,23 +21,27 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     address: {
         type: String,
-        required: true,
-        unique: true
+        required: false,
+        default: ""
     },
     phoneNumber: {
         type: String,
-        required: true,
-        unique: true
+        required: false,
+        default: ""
     },
     profilePicture: {
         type: String,
-        required: true,
+        required: false,
         default: ""
+    },
+    emailVerified: {
+        type: Boolean,
+        required: false,
+        default: false
     },
     blocked: {
         type: Boolean,
