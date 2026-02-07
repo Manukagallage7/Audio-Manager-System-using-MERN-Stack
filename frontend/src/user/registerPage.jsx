@@ -54,19 +54,27 @@ export function RegisterPage() {
 
         setLoading(true);
         
-        axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`, {
-            firstName,
-            lastName,
-            email,
+        const userData = {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim(),
             password,
             type: 'customer',
-            address,
-            phoneNumber,
-            profilePicture
-        }).then(res => {
+            address: address.trim(),
+            phoneNumber: phoneNumber.trim()
+        };
+        
+        // Only add profilePicture if it exists
+        if (profilePicture) {
+            userData.profilePicture = profilePicture;
+        }
+        
+        axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`, userData)
+        .then(res => {
             toast.success('Registration successful! Please log in.');
             navigate('/login');
         }).catch(err => {
+            console.error('Registration error:', err);
             toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
         }).finally(() => {
             setLoading(false);
@@ -259,6 +267,7 @@ export function RegisterPage() {
                                         placeholder="Password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        autoComplete="new-password"
                                         className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 pl-11 pr-12 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                         required
                                     />
@@ -298,6 +307,7 @@ export function RegisterPage() {
                                         placeholder="Confirm password"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
+                                        autoComplete="new-password"
                                         className={`w-full bg-slate-800/50 border rounded-xl px-4 py-3.5 pl-11 pr-12 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
                                             confirmPassword && password !== confirmPassword 
                                                 ? 'border-red-500' 
