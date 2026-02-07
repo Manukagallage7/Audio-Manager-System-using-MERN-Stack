@@ -2,8 +2,21 @@ import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
+
+const transport = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    })
+
 export async function registerUser(req, res) {
 
     try {
@@ -36,7 +49,8 @@ export async function loginUser(req,res) {
                 type  : user.type,
                 phoneNumber : user.phoneNumber,
                 profilePicture: user.profilePicture,
-                blocked: user.blocked
+                blocked: user.blocked,
+                emailVerified: user.emailVerified
             }, process.env.JWT_SECRET)
 
             return res.status(200).json(
@@ -112,6 +126,33 @@ export async function unblockUser(req, res) {
         return res.status(200).json({ message: 'User unblocked successfully', user })
     } catch (error) {
         return res.status(500).json({ message: 'Error unblocking user', error })
+    }
+}
+
+export async function googleLogin(req, res) {
+    const accessToken = req.body.accessToken
+}
+
+export async function sendOTP(req, res){
+
+    if(req.user == null) {
+        res.status(401).json({ message: 'Unauthorized access' })
+        return;
+    }
+    const message = {
+        from : process.env.EMAIL_USER,
+        to : req.body.email,
+        subject : 'Password Reset OTP',
+        text : `Your OTP for password reset is: ${req.body.otp}`
+    }
+
+    try {
+        await transport.sendMail(message);
+        console.log('Email sent successfully');
+        return res.status(200).json({ message: 'OTP sent successfully' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: 'Error sending OTP', error });
     }
 }
 
