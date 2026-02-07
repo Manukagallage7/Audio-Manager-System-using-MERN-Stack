@@ -7,6 +7,7 @@ import LoginPage from './user/loginPage';
 import RegisterPage from './user/registerPage';
 import Home from './home/home';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { VerifyEmail } from './verifyEmail/verifyEmail';
 
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path='/*' element={<HomePage />}/>
+        <Route path='/verify-email' element={<VerifyEmail />} />
       </Routes>
     </BrowserRouter>
     </GoogleOAuthProvider>
