@@ -6,11 +6,12 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiHeadphones, FiLogIn, FiCheck, FiMusic, FiVolume2, FiRadio } from 'react-icons/fi';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [rememberMe, setRememberMe] = useState(false)
+
     const googleLogin = useGoogleLogin({
         onSuccess: (res) => {
             console.log(res);
@@ -51,8 +52,13 @@ export default function LoginPage() {
             toast.success('Login successful!');
             const user = response.data.user;
             localStorage.setItem("token", response.data.token);
-            
+            localStorage.setItem("user", JSON.stringify(user));
             // Small delay to ensure token is saved, then redirect with page reload
+
+            if(user.emailVerified === false) {
+                navigate("/verify-email");
+                return;
+            }
             setTimeout(() => {
                 if(user.type === 'admin') {
                     window.location.href = '/adminPage';
