@@ -6,10 +6,12 @@ import HomePage from './pages/homePage';
 import LoginPage from './user/loginPage';
 import RegisterPage from './user/registerPage';
 import Home from './home/home';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 const App = () => {
   return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENT_ID}>
     <BrowserRouter>
     <Toaster position='top-right' />
       <Routes>
@@ -19,6 +21,7 @@ const App = () => {
         <Route path='/*' element={<HomePage />}/>
       </Routes>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   )
 }
 
