@@ -14,7 +14,8 @@ export default function LoginPage() {
     const googleLogin = useGoogleLogin({
         onSuccess: (res) => {
             console.log(res);
-            axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/google-login`, {
+            const backendURL = import.meta.env.VITE_BACKEND_URL
+            axios.post(`${backendURL}/api/users/google-login`, {
                 accessToken: res.access_token
             }).then(res => {
                 toast.success('Login successful!');
